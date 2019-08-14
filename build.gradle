@@ -1,0 +1,154 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'application'
+
+group 'com.tusdao'
+version '1.0.0'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+//[compileJava, compileTestJava, Javadoc]*.options*.encoding = 'UTF-8'
+
+def defaultEnv = System.getProperty("appEnv")
+def currentTime = new Date()
+def currentTimeStr = currentTime.format("yyyyMMddHHmmss")
+
+defaultEnv = defaultEnv ?: "dev"
+
+def env = "$defaultEnv"
+def baseArchivesName = 'tusdao-webservice'
+
+if ("" != "$env") {
+    // 包名规则， 如果 version 存在 则 $baseArchivesName-$env-$version (version 会自动追加！)，
+    // 否则 $baseArchivesName-$env-$currentTimeStr
+    if (version == null || "unspecified" == "$version" || "" == "$version") {
+        archivesBaseName = "$baseArchivesName-$env-$currentTimeStr"
+        println "当前时间: $currentTime, 当前 profile: $env, 包名: $archivesBaseName"
+    } else {
+        archivesBaseName = "$baseArchivesName-$env"
+        println "当前时间: $currentTime, 当前 profile: $env, 包名: $archivesBaseName-$version"
+    }
+} else {
+    throw new Exception("error profile flag!")
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources", "src/main/profile/$env"]
+        }
+    }
+}
+
+buildscript {
+    ext {
+        springBootVersion = '2.0.0.RC1'
+    }
+    repositories {
+        mavenLocal()
+        maven { url "http://maven.tusdao.com:8082/nexus/content/groups/public/" }
+    }
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+    dependencies {
+        classpath('com.google.protobuf:protobuf-gradle-plugin:0.8.3')
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+eclipse {
+    classpath {
+        containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+        containers('org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8')
+    }
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("${buildDir}/classes/main/")
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://maven.tusdao.com:8082/nexus/content/groups/public/" }
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+configurations {
+    mybatisGenerator
+}
+
+// 显示当前项目下所有用于 compile 的 jar.
+task listJars(description: 'Display all compile jars.') << {
+    configurations.compile.each { File file -> println file.name }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
+
+dependencies {
+    testCompile(
+            'junit:junit:4.12',
+            'org.springframework.boot:spring-boot-starter-test'
+    )
+    compile(
+            'io.springfox:springfox-swagger2:2.7.0',
+            'org.apache.httpcomponents:httpclient:4.5.3',
+            'com.alibaba:fastjson:1.2.37',
+            'io.springfox:springfox-swagger-ui:2.7.0'
+
+    )
+
+    compile(
+            'org.springframework.boot:spring-boot-starter-log4j2',
+            'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.1',
+            'org.apache.commons:commons-compress:1.18',
+            'com.github.pagehelper:pagehelper:5.0.2',
+            'com.alibaba:druid:1.0.29',
+            'mysql:mysql-connector-java'
+    )
+    compile('org.springframework.boot:spring-boot-starter-web-services',
+            'org.apache.cxf:cxf-spring-boot-starter-jaxws:3.2.5',
+            'org.apache.cxf:cxf-rt-frontend-jaxws:3.1.6',
+            'org.apache.cxf:cxf-rt-transports-http:3.1.6')
+
+    compile('org.springframework.boot:spring-boot-starter-web') {
+        exclude module: 'spring-boot-starter-logging'
+        exclude module: 'logback-classic'
+    }
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+
+
+}
+
+test {
+    ignoreFailures = true
+    exclude 'com/tusdao/**'
+}
+
+// run spring boot app
+bootRun {
+    //addResources = true
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// run all task
+task runAll {}
+runAll.dependsOn(bootRun)
+
+mainClassName = 'com.tusdao.TusdaoWebserviceApplication'

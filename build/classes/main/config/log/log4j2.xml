@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error" monitorInterval="600">
+    <!--日志级别：TRACE < DEBUG < INFO < WARN < ERROR < FATAL-->
+    <Properties>
+        <!-- 配置日志文件输出目录,此处为tomcat bin/logs 文件夹 -->
+        <Property name="LOG_HOME">logs</Property>
+        <property name="FILE_NAME"></property>
+    </Properties>
+
+    <Appenders>
+        <!--mybatis sql show, level=TRACE, show result and statement; level=DEBUG show statement-->
+        <Console name="SQLConsole" target="SYSTEM_OUT">
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            <!--<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            <!--日志输出的格式-->
+            <!--
+                %d{yyyy-MM-dd HH:mm:ss, SSS} : 日志生产时间,输出到毫秒的时间
+                %-5level : 输出日志级别，-5表示左对齐并且固定输出5个字符，如果不足在右边补0
+                %c : logger的名称(%logger)
+                %t : 输出当前线程名称
+                %p : 日志输出格式
+                %m : 日志内容，即 logger.info("message")
+                %n : 换行符
+                %C : Java类名(%F)
+                %L : 行号
+                %M : 方法名
+                %l : 输出语句所在的行数, 包括类名、方法名、文件名、行数
+             -->
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] mybatis-sql %throwable - %msg%n}{FATAL=White, ERROR=Red, WARN=Yellow, INFO=Black, DEBUG=Cyan, TRACE=Blue}"/>
+        </Console>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--默认控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            <!--<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            <!--<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            <!--<PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} local test %highlight{%-5level} [%t] %l %throwable - %msg%n}{FATAL=White, ERROR=Bright Red, WARN=Yellow, INFO=Black, DEBUG=Cyan, TRACE=Blue}"/>-->
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} local-dev %highlight{%-5level} [%t]\t %C{1.}.%M(%F:%L) %throwable - %msg%n}{FATAL=White, ERROR=Bright Red, WARN=Yellow, INFO=Black, DEBUG=Cyan, TRACE=Blue}"/>
+        </Console>
+
+        <RollingRandomAccessFile name="INFO" fileName="${LOG_HOME}/${FILE_NAME}-INFO.log" filePattern="${LOG_HOME}/${FILE_NAME}_%d{yyyy-MM-dd}_%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %c [%t] %l %throwable - %msg%xEx%n"/>
+            <!--<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %l [local:%X{client} remote:%X{server}] %throwable - %msg%n"/>-->
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+                <!--<ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>-->
+                <!--<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="ERROR" fileName="${LOG_HOME}/${FILE_NAME}-ERROR.log" filePattern="${LOG_HOME}/${FILE_NAME}-ERROR_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+            </Filters>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %c [%t] %l %throwable - %msg%xEx%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="FATAL" fileName="${LOG_HOME}/${FILE_NAME}-FATAL.log" filePattern="${LOG_HOME}/${FILE_NAME}-FATAL_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %c [%t] %l %throwable - %msg%xEx%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+
+        <!--全部日志信息:DEBUG及以上级别-->
+        <RollingRandomAccessFile name="ALL" fileName="${LOG_HOME}/${FILE_NAME}-ALL.log" filePattern="${LOG_HOME}/${FILE_NAME}-ALL%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="ACCEPT"/>
+            </Filters>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %c [%t] %l %throwable - %msg%xEx%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <!--<DefaultRolloverStrategy max="20"/>-->
+            <!--<DefaultRolloverStrategy>-->
+            <!--<Delete basePath="${LOG_HOME}" maxDepth="2">-->
+            <!--<IfFileName glob="*/${FILE_NAME}-*.log.gz"/>-->
+            <!--<IfLastModified age="120d"/>-->
+            <!--</Delete>-->
+            <!--</DefaultRolloverStrategy>-->
+        </RollingRandomAccessFile>
+        <!--配置异步写日志-->
+        <!--<Async name="Async">-->
+            <!--<AppenderRef ref="ALL" />-->
+        <!--</Async>-->
+    </Appenders>
+
+    <Loggers>
+        <!-- db日志记录 -->
+        <!--mybatis sql show, level=trace, show result and statement; level=debug show statement-->
+        <Logger name="com.tusdao.**.dao" level="trace" additivity="false">
+            <appender-ref ref="SQLConsole"/>
+            <!--print the sql with level trace and debug-->
+            <Appender-Ref ref="ALL"/>
+        </Logger>
+
+        <!-- 第三方日志系统 -->
+        <Logger name="org.springframework" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <logger name="org.springframework.web" level="info"/>
+        <Logger name="org.apache.http" level="warn"/>
+        <Logger name="com.tusdao.*" level="info"/>
+
+
+        <!--采用异步输出日志-->
+        <!--<AsyncLogger name="com.tusdao.*" level="info">-->
+            <!--&lt;!&ndash;写入info级别&ndash;&gt;-->
+            <!--<AppenderRef ref="ALL" level="info"/>-->
+            <!--<AppenderRef ref="INFO"/>-->
+        <!--</AsyncLogger>-->
+
+        <!--应用默认日志输出及appender，第三方或者额外的输出可以单独指定，此处尽量设置为info或以上级别，输出默认全局日志-->
+        <Root level="trace">
+        <!--<Root level="info">-->
+            <Appender-Ref ref="Console"/>
+            <Appender-Ref ref="INFO"/>
+            <Appender-Ref ref="ERROR"/>
+            <Appender-Ref ref="FATAL"/>
+            <Appender-Ref ref="ALL"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

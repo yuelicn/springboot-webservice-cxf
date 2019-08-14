@@ -1,0 +1,45 @@
+
+
+spring:
+  # 数据库访问配置
+  datasource:
+    url: jdbc:mysql://47.94.211.209:8306/statistics?allowMultiQueries=true&serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: Tusdao@mysql2019*
+    driver-class-name: com.mysql.jdbc.Driver
+    #    platform: mysql
+    # 使用druid
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      maxActive: 40
+      initialSize: 1
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxOpenPreparedStatements: 20
+mybatis:
+  config-location: classpath:config/mybatis/mybatis-config.xml
+  mapperLocations: classpath:config/mybatis/mapper/**/*Mapper.xml
+  typeAliasesPackage: com.tusdao.**.model
+  checkConfigLocation: true
+
+# tomcat最大线程数，默认为200
+server:
+  tomcat:
+    max-threads:  800
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+  port: 8090
+
+logging:
+  config: classpath:config/log/log4j2.xml
+
+constarct:
+  url: http://39.107.106.241:8880/v1/dvmorder/exec
+  issuer: Org_Depart_SwitchNodeAA
