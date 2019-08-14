@@ -1,4 +1,4 @@
-# tusdao-webservice
+# tusdao-webservice-cxf
 # JDK=1.8
 # database=mysql-5.6+
 
