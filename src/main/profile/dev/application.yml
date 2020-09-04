@@ -4,8 +4,8 @@ spring:
   # 数据库访问配置
   datasource:
     url: jdbc:mysql://xxxxx:8306/statistics?allowMultiQueries=true&serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-    username: root
-    password: Tusdao@mysql2019*
+    username: xxxx
+    password: xxxxx
     driver-class-name: com.mysql.jdbc.Driver
     #    platform: mysql
     # 使用druid
